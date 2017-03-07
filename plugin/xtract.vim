@@ -7,7 +7,7 @@ let g:loaded_xtract = 1
 "
 "     :6,8Xtract newfile
 "
-command -range -bang -nargs=1 Xtract :<line1>,<line2>call s:Xtract(<bang>0,<f-args>)
+command -range -bang -nargs=1 -complete=dir Xtract :<line1>,<line2>call s:Xtract(<bang>0,<f-args>)
 
 function! s:Xtract(bang,target) range abort
   let first = a:firstline
