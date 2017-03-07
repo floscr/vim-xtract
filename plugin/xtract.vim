@@ -34,9 +34,18 @@ function! s:Xtract(bang,target) range abort
 
   " Open a new window and paste it in
   silent execute "split ".fullpath
-  silent put
-  silent 1
-  silent normal '"_dd'
+
+  if (&filetype == 'vue.html.javascript.css')
+    " Trigger vue snippet and insert the selected lines
+    silent exe "normal! iv" . "\<C-r>=UltiSnips#ExpandSnippet()\<CR>"
+    silent exe "normal! {{"
+    silent put
+    silent exe "normal! kdd"
+  else
+    silent put
+    silent 1
+    silent normal '"_dd'
+  endif
 
   " mkdir -p
   if !isdirectory(fnamemodify(fullpath, ':h'))

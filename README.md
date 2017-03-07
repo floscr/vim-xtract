@@ -1,5 +1,7 @@
 # vim-xtract
 
+Fork for own uses, use the [original](https://github.com/floscr/vim-xtract)
+
 > Extract the selection into a new file
 
 vim-xtract helps you split up large files into smaller files. Great for refactoring.
