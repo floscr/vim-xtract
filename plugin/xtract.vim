@@ -9,6 +9,11 @@ let g:loaded_xtract = 1
 "
 command -range -bang -nargs=1 -complete=dir Xtract :<line1>,<line2>call s:Xtract(<bang>0,<f-args>)
 
+" Convert CamelCase to kebab-case
+" MyString -> my-string
+function! s:ToKebabCase(string)
+  return substitute(a:string, '\(\<\u\l\+\|\l\+\)\(\u\)', '\l\1-\l\2', 'g')
+endfunction
 function! s:Xtract(bang,target) range abort
   let first = a:firstline
   let last = a:lastline
