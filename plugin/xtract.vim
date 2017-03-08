@@ -32,11 +32,14 @@ function! s:Xtract(bang,target) range abort
   let last = a:lastline
   let range = first.",".last
 
+  let isVue = &filetype == 'vue.html.javascript.css'
+
   let ext = expand("%:e")        " js
   let path = expand("%:h")       " /path/to
   let fname = a:target.".".ext   " target.js
   let fullpath = path."/".fname  " /path/to/target.js
   let spaces = matchstr(getline(first),"^ *")
+  let fileNameWithoutExtension = expand("%:r")
 
   " Raise an error if invoked without a bang
   if filereadable(fullpath) && !a:bang
@@ -45,15 +48,30 @@ function! s:Xtract(bang,target) range abort
 
   " Copy it
   silent exe range."yank"
-
   " Replace it
   let placeholder = substitute(&commentstring, "%s", fname, "")
   silent exe "norm! :".first.",".last."change\<CR>".spaces.placeholder."\<CR>.\<CR>"
 
+  if (isVue)
+    let kebabFileName = s:ToKebabCase(fileNameWithoutExtension)
+    let tagName = s:ConvertToTag(kebabFileName)
+    " Replace selection with tag name
+    silent exe "norm! :".first.",".last."change\<CR>".spaces.tagName."\<CR>.\<CR>"
+    " Fix indentation
+    silent exe "norm! =="
+    if (s:fileContainsString('components'))
+      execute('%s/components:\s{\zs/\r' . fileNameWithoutExtension . ',/g | normal j=``')
+    endif
+  else
+    " Replace it
+    let placeholder = substitute(&commentstring, "%s", fname, "")
+    silent exe "norm! :".first.",".last."change\<CR>".spaces.placeholder."\<CR>.\<CR>"
+  endif
+
   " Open a new window and paste it in
   silent execute "split ".fullpath
 
-  if (&filetype == 'vue.html.javascript.css')
+  if (isVue)
     " Trigger vue snippet and insert the selected lines
     silent exe "normal! iv" . "\<C-r>=UltiSnips#ExpandSnippet()\<CR>"
     silent exe "normal! {{"
