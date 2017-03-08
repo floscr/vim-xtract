@@ -32,6 +32,11 @@ function! s:fileContainsString(string)
   endif
 endfunction
 
+" Escape forward slashes in path string
+function! s:escapePath(path)
+  return substitute(a:path, '/', '\\/', 'g')
+endfunction
+
 " Get the file name from a path string
 " Will only work on files with one '.' in the file name
 " /my/path/file.js -> file
@@ -43,7 +48,18 @@ endfunction
 
 " Add component to the components: { x } object
 function! s:addComponentToVueObject(string)
-  execute('%s/components:\s{\zs/\r' . a:string . ',/g | normal Vjj=')
+  if (s:fileContainsString('components:'))
+    execute('%s/components:\s{\zs/\r' . a:string . ',/g | normal Vjj=')
+  else
+    execute('%s/\zs\ze}\_s*<\/script>/components: {\r' . a:string . ',\r}\r\r/g') | normal! =``
+  endif
+endfunction
+
+" Add import statement before export default
+function! s:addImport(component, path)
+  let fileNameWithoutExtension = split(a:path, '\.')[0]
+  let fileName = "'". s:escapePath(fileNameWithoutExtension) ."'" " Escape single quotes around the file name
+  execute('%s/\zs\zeexport default {/import '. a:component .' from '. fileName .'\r\r/g')
 endfunction
 
 " -----------------------------------------------------------------------------
@@ -83,9 +99,8 @@ function! s:Xtract(bang,target) range abort
     " filename
     " TODO: Fix this in function!
     silent exe "norm! Vu"
-    if (s:fileContainsString('components'))
-      s:addComponentToVueObject(fileNameWithoutExtension)
-    endif
+    call s:addComponentToVueObject(fileNameWithoutExtension)
+    call s:addImport(fileNameWithoutExtension, fullpath)
   else
     " Replace it
     let placeholder = substitute(&commentstring, "%s", fname, "")
