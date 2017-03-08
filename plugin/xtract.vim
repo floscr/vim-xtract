@@ -14,6 +14,12 @@ command -range -bang -nargs=1 -complete=dir Xtract :<line1>,<line2>call s:Xtract
 function! s:ToKebabCase(string)
   return substitute(a:string, '\(\<\u\l\+\|\l\+\)\(\u\)', '\l\1-\l\2', 'g')
 endfunction
+
+" Convert string to tag name
+" string -> <string></string>
+function! s:ConvertToTag(string)
+   return '<' . a:string . '></' . a:string . '>'
+endfunction
 function! s:Xtract(bang,target) range abort
   let first = a:firstline
   let last = a:lastline
