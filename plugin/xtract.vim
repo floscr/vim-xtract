@@ -9,6 +9,10 @@ let g:loaded_xtract = 1
 "
 command -range -bang -nargs=1 -complete=dir Xtract :<line1>,<line2>call s:Xtract(<bang>0,<f-args>)
 
+" -----------------------------------------------------------------------------
+" Helper Functions
+" -----------------------------------------------------------------------------
+
 " Convert CamelCase to kebab-case
 " MyString -> my-string
 function! s:ToKebabCase(string)
@@ -21,11 +25,25 @@ function! s:ConvertToTag(string)
    return '<' . a:string . '></' . a:string . '>'
 endfunction
 
+" Check if the current file contains a string
 function! s:fileContainsString(string)
   if match(readfile(expand("%:p")), a:string) != -1
     return 1
   endif
 endfunction
+
+" Get the file name from a path string
+" Will only work on files with one '.' in the file name
+" /my/path/file.js -> file
+function! s:fileNameFromPath(path)
+  let file = split(a:path, '/')[-1] " Get the last item from string array that is split by /
+  let fileName = split(file, '\.')[0]
+  return fileName
+endfunction
+
+" -----------------------------------------------------------------------------
+" Main
+" -----------------------------------------------------------------------------
 
 function! s:Xtract(bang,target) range abort
   let first = a:firstline
@@ -39,7 +57,7 @@ function! s:Xtract(bang,target) range abort
   let fname = a:target.".".ext   " target.js
   let fullpath = path."/".fname  " /path/to/target.js
   let spaces = matchstr(getline(first),"^ *")
-  let fileNameWithoutExtension = expand("%:r")
+  let fileNameWithoutExtension = s:fileNameFromPath(a:target)
 
   " Raise an error if invoked without a bang
   if filereadable(fullpath) && !a:bang
@@ -48,9 +66,6 @@ function! s:Xtract(bang,target) range abort
 
   " Copy it
   silent exe range."yank"
-  " Replace it
-  let placeholder = substitute(&commentstring, "%s", fname, "")
-  silent exe "norm! :".first.",".last."change\<CR>".spaces.placeholder."\<CR>.\<CR>"
 
   if (isVue)
     let kebabFileName = s:ToKebabCase(fileNameWithoutExtension)
