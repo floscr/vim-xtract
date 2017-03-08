@@ -20,6 +20,13 @@ endfunction
 function! s:ConvertToTag(string)
    return '<' . a:string . '></' . a:string . '>'
 endfunction
+
+function! s:fileContainsString(string)
+  if match(readfile(expand("%:p")), a:string) != -1
+    return 1
+  endif
+endfunction
+
 function! s:Xtract(bang,target) range abort
   let first = a:firstline
   let last = a:lastline
