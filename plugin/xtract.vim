@@ -41,6 +41,11 @@ function! s:fileNameFromPath(path)
   return fileName
 endfunction
 
+" Add component to the components: { x } object
+function! s:addComponentToVueObject(string)
+  execute('%s/components:\s{\zs/\r' . a:string . ',/g | normal Vjj=')
+endfunction
+
 " -----------------------------------------------------------------------------
 " Main
 " -----------------------------------------------------------------------------
@@ -54,7 +59,7 @@ function! s:Xtract(bang,target) range abort
 
   let ext = expand("%:e")        " js
   let path = expand("%:h")       " /path/to
-  let fname = a:target.".".ext   " target.js
+  let fname = a:target           " target.js
   let fullpath = path."/".fname  " /path/to/target.js
   let spaces = matchstr(getline(first),"^ *")
   let fileNameWithoutExtension = s:fileNameFromPath(a:target)
@@ -73,9 +78,13 @@ function! s:Xtract(bang,target) range abort
     " Replace selection with tag name
     silent exe "norm! :".first.",".last."change\<CR>".spaces.tagName."\<CR>.\<CR>"
     " Fix indentation
-    silent exe "norm! =="
+    silent exe "norm! V="
+    " Fix Uppercase first letter when only one Character is uppercase in
+    " filename
+    " TODO: Fix this in function!
+    silent exe "norm! Vu"
     if (s:fileContainsString('components'))
-      execute('%s/components:\s{\zs/\r' . fileNameWithoutExtension . ',/g | normal j=``')
+      s:addComponentToVueObject(fileNameWithoutExtension)
     endif
   else
     " Replace it
