@@ -58,7 +58,7 @@ endfunction
 " Add import statement before export default
 function! s:addImport(component, path)
   let fileNameWithoutExtension = split(a:path, '\.')[0]
-  let fileName = "'". s:escapePath(fileNameWithoutExtension) ."'" " Escape single quotes around the file name
+  let fileName = "'./". s:escapePath(fileNameWithoutExtension) ."'" " Escape single quotes around the file name
   execute('%s/\zs\zeexport default {/import '. a:component .' from '. fileName .'\r\r/g')
 endfunction
 
